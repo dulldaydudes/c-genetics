@@ -1,0 +1,124 @@
+{
+  "traits": [
+    {
+      "name": "Compressed",
+      "present": [
+        {
+          "position": 0,
+          "length": 2,
+          "contains": "1"
+        },
+        {
+          "position": 2,
+          "length": 2,
+          "contains": "1",
+          "operator": "not"
+        }
+      ]
+    },
+    {
+      "name": "Prolate",
+      "present": [
+        {
+          "position": 2,
+          "length": 2,
+          "contains": "1"
+        },
+        {
+          "position": 0,
+          "length": 2,
+          "contains": "1",
+          "operator": "not"
+        }
+      ]
+    },
+    {
+      "name": "Tail Type 1",
+      "present": [
+        {
+          "position": 4,
+          "length": 2,
+          "equals": "11"
+        },
+        {
+          "position": 0,
+          "length": 4,
+          "contains": "1",
+          "operator": "not"
+        },
+        {
+          "position": 6,
+          "length": 2,
+          "contains": "1",
+          "operator": "not"
+        }
+      ]
+    },
+    {
+      "name": "Tail Type 2",
+      "present": [
+        {
+          "position": 6,
+          "length": 2,
+          "equals": "11"
+        },
+        {
+          "position": 0,
+          "length": 6,
+          "contains": "1",
+          "operator": "not"
+        }
+      ]
+    },
+    {
+      "name": "Scales",
+      "present": [
+        {
+          "position": 12,
+          "length": 2,
+          "equals": "11"
+        }
+      ]
+    },
+    {
+      "name": "Silicate Inclusions",
+      "present": [
+        {
+          "position": 14,
+          "length": 2,
+          "equals": "11"
+        }
+      ]
+    },
+    {
+      "name": "Bone Plates",
+      "present": [
+        {
+          "position": 16,
+          "length": 2,
+          "contains": "1"
+        }
+      ]
+    },
+    {
+      "name": "Increased Strength",
+      "present": [
+        {
+          "position": 18,
+          "length": 2,
+          "contains": "1"
+        }
+      ]
+    },
+    {
+      "name": "Increased Constitution",
+      "present": [
+        {
+          "position": 20,
+          "length": 2,
+          "contains": "11"
+        }
+      ]
+    }
+  ]
+}
