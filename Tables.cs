@@ -26,24 +26,18 @@ public class Tables
         Console.ReadKey();
     }
     
-    public static void ShowPerson(
-        Individual currentPerson,
-        List<Trait> traits
-    )
+    public static void ShowPerson(Individual individual, List<Trait> traits)
     {
         Console.Clear();
-        Console.WriteLine("Name:".PadRight(Program.PadRightDistance) + currentPerson.Name);
-        Console.WriteLine("Sex:".PadRight(Program.PadRightDistance) + currentPerson.Sex);
-        Console.WriteLine("Genome:".PadRight(Program.PadRightDistance) + currentPerson.Genome);
-     
+        Console.WriteLine($"Name: {individual.Name}");
+        Console.WriteLine($"Genome: {individual.Genome.Sequence}");
+        Console.WriteLine($"Gender: {individual.Gender}");
+        
         foreach (var trait in traits)
         {
-            Console.Write(trait.Name.PadRight(Program.PadRightDistance));
-            Console.Write((trait.IsPresent(currentPerson) ? "X" : " "));
-            Console.WriteLine();
+            Console.WriteLine($"{trait.Name}: {(trait.IsPresent(individual) ? "X" : "O")}");
         }
 
-        Console.WriteLine();
         Console.ReadKey();
     }
 }

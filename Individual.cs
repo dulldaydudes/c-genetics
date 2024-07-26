@@ -3,39 +3,20 @@ namespace Genetics;
 public class Individual
 {
     public string Name { get; set; }
-    public string Genome { get; set; }
-    public string Sex { get; set; }
+    public Genome Genome { get; set; }
+    public string Gender { get; set; }
 
-    public Individual(string name, string genome, string sex)
+    public Individual(string name, int genomeLength, string gender)
+    {
+        Name = name;
+        Genome = new Genome(genomeLength);
+        Gender = gender;
+    }
+
+    public Individual(string name, Genome genome, string gender)
     {
         Name = name;
         Genome = genome;
-        Sex = sex;
-    }
-
-    public static Individual Cross(Individual parent1, Individual parent2)
-    {
-        if (parent1.Sex == parent2.Sex)
-        {
-            throw new ArgumentException("Beide Elternteile müssen unterschiedliches Geschlecht haben.");
-        }
-
-        string childGenome = CrossGenomes(parent1.Genome, parent2.Genome);
-        string childGender = (new Random().Next(2) == 0) ? "X" : "Y";
-        return new Individual("Child of " + parent1.Name + " and " + parent2.Name, childGenome, childGender);
-    }
-
-    private static string CrossGenomes(string genome1, string genome2)
-    {
-        Random random = new Random();
-        char[] childGenome = new char[genome1.Length];
-
-        for (int i = 0; i < genome1.Length; i++)
-        {
-            // Randomly select a bit from either parent
-            childGenome[i] = (random.Next(2) == 0) ? genome1[i] : genome2[i];
-        }
-
-        return new string(childGenome);
+        Gender = gender;
     }
 }

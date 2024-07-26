@@ -15,22 +15,9 @@ public class IndividualService
         people.Add(
             new Individual(
                 "Person " + (people.Count + 1),
-                GenerateRandomBinaryString(genomeLength),
+                genomeLength,
                 gender
             ));
-    }
-
-    private static string GenerateRandomBinaryString(int length)
-    {
-        Random random = new Random();
-        char[] binaryString = new char[length];
-
-        for (int i = 0; i < length; i++)
-        {
-            binaryString[i] = random.Next(2) == 0 ? '0' : '1';
-        }
-
-        return new string(binaryString);
     }
 
     public static void ShowPersons(List<Trait> traits, List<Individual> individuals)
@@ -64,18 +51,18 @@ public class IndividualService
     {
         foreach (var condition in trait.Present)
         {
-            string segment = person.Genome.Substring(condition.Position, condition.Length);
+            string segment = person.Genome.GetSegment(condition.Position, condition.Length);
             if (condition.Contains != null)
             {
                 if (segment.Contains(condition.Contains))
                 {
                     segment = segment.Replace(condition.Contains, "");
-                    person.Genome = person.Genome.Remove(condition.Position, condition.Length).Insert(condition.Position, segment);
+                    person.Genome.UpdateSegment(condition.Position, segment);
                 }
                 else
                 {
                     segment += condition.Contains;
-                    person.Genome = person.Genome.Remove(condition.Position, condition.Length).Insert(condition.Position, segment);
+                    person.Genome.UpdateSegment(condition.Position, segment);
                 }
             }
         }
@@ -113,25 +100,11 @@ public class IndividualService
 
         Console.WriteLine($"{parent1.Name} und {parent2.Name} haben ein Kind gezeugt.");
 
-        var childGenome = RecombineGenomes(parent1.Genome, parent2.Genome);
+        var childGenome = parent1.Genome.RecombineWith(parent2.Genome);
         var gender = new Random().Next(2) == 0 ? "X" : "Y";
         people.Add(new Individual("Kind von " + parent1.Name + " und " + parent2.Name, childGenome, gender));
 
         Console.ReadKey();
-    }
-
-    private static string RecombineGenomes(string genome1, string genome2)
-    {
-        int length = Math.Min(genome1.Length, genome2.Length);
-        Random random = new Random();
-        char[] childGenome = new char[length];
-
-        for (int i = 0; i < length; i++)
-        {
-            childGenome[i] = random.Next(2) == 0 ? genome1[i] : genome2[i];
-        }
-
-        return new string(childGenome);
     }
 
     private static int DisplayMenu(string[] menuItems, string backOption)
