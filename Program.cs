@@ -2,21 +2,23 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 class Program
 {
     public static void Main(string[] args)
     {
-        // Initialisiere Traits und Personen
-        (var traits, var people) = Init();
+        string jsonFilePath = "/Users/amlor/CSharpProjects/Genetics/traits.json";
+
+        var (traits, genomeLength) = TraitAnalyzer.GetMaxGenomeLength(jsonFilePath);
+
+        Console.WriteLine(traits.Count + " Traits geladen.");
+
+        var people = new List<Individual>();
 
         string[] menuItems =
         {
-            "Person erzeugen",
-            "Person editieren",
-            "Nachkommen zeugen",
-            "Tabelle ausgeben",
-            "Programm beenden",
+            "Person erzeugen", "Person editieren", "Nachkommen zeugen", "Tabelle ausgeben", "Programm beenden",
         };
         int selectedIndex = 0;
         bool exit = false;
@@ -55,20 +57,16 @@ class Program
                     switch (selectedIndex)
                     {
                         case 0:
-                            CreatePerson(people);
-                            Console.WriteLine("Person erstellt. Drücke eine Taste, um fortzufahren.");
+                            CreatePerson(people, genomeLength);
                             break;
                         case 1:
                             EditPersons(traits, people);
-                            Console.WriteLine("Bearbeitung abgeschlossen. Drücke eine Taste, um fortzufahren.");
                             break;
                         case 2:
                             Procreate(people);
-                            Console.WriteLine();
                             break;
                         case 3:
                             ShowTraitTable("Traits including Crossed Individuals", traits, people);
-                            Console.WriteLine();
                             break;
                         case 4:
                             exit = true;
@@ -76,33 +74,7 @@ class Program
                     }
                     break;
             }
-            Console.ReadKey();
         }
-    }
-
-    private static (List<Trait>, List<Individual>) Init()
-    {
-        // Definiere Traits
-        var traits = new List<Trait>
-        {
-            new Trait("Compressed", ind => ind.GetGenome().Substring(0, 2).Contains('1') && !ind.GetGenome().Substring(2, 2).Contains('1')),
-            new Trait("Prolate", ind => ind.GetGenome().Substring(2, 2).Contains('1') && !ind.GetGenome().Substring(0, 2).Contains('1')),
-            new Trait("Tail Type 1", ind => ind.GetGenome().Substring(4, 2) == "11" && !ind.GetGenome().Substring(0, 4).Contains('1')),
-            new Trait("Tail Type 2", ind => ind.GetGenome().Substring(6, 2) == "11" && !ind.GetGenome().Substring(0, 4).Contains('1')),
-            new Trait("Scales", ind => ind.GetGenome().Substring(12, 2) == "10"),
-            new Trait("Silicate Inclusions", ind => ind.GetGenome().Substring(14, 2) == "11"),
-            new Trait("Bone Plates", ind => ind.GetGenome().Substring(16, 2) == "10"),
-            new Trait("Increased Strength", ind => ind.GetGenome().Substring(18, 2) == "10"),
-            new Trait("Increased Constitution", ind => ind.GetGenome().Substring(20, 2) == "11")
-        };
-
-        // Erstelle Personen
-        var people = new List<Individual> { };
-
-        CreatePerson(people);
-        CreatePerson(people);
-
-        return (traits, people);
     }
 
     private static void ShowTraitTable(string title, List<Trait> traits, List<Individual> individuals)
@@ -120,6 +92,9 @@ class Program
 
             Console.WriteLine();
         }
+
+        Console.WriteLine();
+        Console.ReadKey();
     }
 
     private static string GenerateRandomBinaryString(int length)
@@ -129,24 +104,27 @@ class Program
 
         for (int i = 0; i < length; i++)
         {
-            // Generiere zufällige 0 oder 1
             binaryString[i] = random.Next(2) == 0 ? '0' : '1';
         }
 
         return new string(binaryString);
     }
 
-    private static void CreatePerson(List<Individual> people)
+    private static void CreatePerson(List<Individual> people, int genomeLength)
     {
+        Console.Clear();
         Random random = new Random();
         string gender = random.Next(2) == 0 ? "X" : "Y";
+        string name = "Person " + (people.Count + 1);
 
         people.Add(
             new Individual(
-                "Person " + (people.Count + 1),
-                GenerateRandomBinaryString(22),
+                name,
+                GenerateRandomBinaryString(genomeLength),
                 gender
             ));
+        Console.WriteLine(name + " erstellt. Drücke eine Taste, um fortzufahren.");
+        Console.ReadKey();
     }
 
     private static void EditPersons(List<Trait> traits, List<Individual> individuals)
@@ -258,29 +236,41 @@ class Program
                     break;
             }
         }
-
-        Console.WriteLine("Bearbeitung abgeschlossen. Drücke eine Taste, um fortzufahren.");
-        Console.ReadKey();
-    }
-
-    private static string FormatTraitName(Trait trait, Individual person)
-    {
-        return trait.Name.PadRight(30) + (trait.IsPresent(person) ? "X" : " ");
     }
 
     private static void ToggleTrait(Individual person, Trait trait)
     {
-        // Hier könnten wir die Logik implementieren, um das Genom der Person zu ändern
-        // um das Vorhandensein des Merkmals zu ändern.
-        // Für jetzt, als Platzhalter, geben wir nur eine Nachricht aus:
-        Console.WriteLine($"Toggling trait: {trait.Name} for person: {person.Name}");
+        foreach (var condition in trait.Present)
+        {
+            string segment = person.Genome.Substring(condition.Position, condition.Length);
+            if (condition.Contains != null)
+            {
+                // Beispiel: Wenn das Trait enthalten ist, schalte es aus, und umgekehrt
+                if (segment.Contains(condition.Contains))
+                {
+                    segment = segment.Replace(condition.Contains, "");
+                    person.Genome = person.Genome.Remove(condition.Position, condition.Length).Insert(condition.Position, segment);
+                }
+                else
+                {
+                    segment += condition.Contains;
+                    person.Genome = person.Genome.Remove(condition.Position, condition.Length).Insert(condition.Position, segment);
+                }
+            }
+        }
+    }
+
+    private static string FormatTraitName(Trait trait, Individual person)
+    {
+        // Format trait name based on presence in person's genome
+        return $"{trait.Name}: {(trait.IsPresent(person) ? "X" : "O")}";
     }
 
     private static void Procreate(List<Individual> people)
     {
         if (people.Count < 2)
         {
-            Console.WriteLine("Es müssen mindestens zwei Personen existieren, um Nachkommen zu erzeugen.");
+            Console.WriteLine("Es müssen mindestens zwei Personen vorhanden sein, um Nachkommen zu erzeugen.");
             Console.ReadKey();
             return;
         }
@@ -362,5 +352,7 @@ class Program
         {
             Console.WriteLine("Kreuzung abgebrochen.");
         }
+
+        Console.ReadKey();
     }
 }

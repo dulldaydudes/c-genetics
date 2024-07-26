@@ -38,7 +38,7 @@
         {
           "position": 4,
           "length": 2,
-          "equals": "11"
+          "equalValue": "11"
         },
         {
           "position": 0,
@@ -60,7 +60,7 @@
         {
           "position": 6,
           "length": 2,
-          "equals": "11"
+          "equalValue": "11"
         },
         {
           "position": 0,
@@ -76,7 +76,7 @@
         {
           "position": 12,
           "length": 2,
-          "equals": "11"
+          "equalValue": "11"
         }
       ]
     },
@@ -86,7 +86,7 @@
         {
           "position": 14,
           "length": 2,
-          "equals": "11"
+          "equalValue": "11"
         }
       ]
     },

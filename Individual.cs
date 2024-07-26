@@ -2,41 +2,40 @@ namespace Genetics;
 
 public class Individual
 {
-    public string Name { get; private set; }
-    public string Genome { get; private set; }
-    public string Gender { get; private set; }
+    public string Name { get; set; }
+    public string Genome { get; set; }
+    public string Gender { get; set; }
 
-    public Individual(
-        string name,
-        string genome,
-        string gender
-    ) {
+    public Individual(string name, string genome, string gender)
+    {
         Name = name;
         Genome = genome;
         Gender = gender;
     }
 
-    public string GetGenome()
+    public static Individual Cross(Individual parent1, Individual parent2)
     {
-        return Genome;
-    }
-
-    public static Individual Cross(
-        Individual parent1,
-        Individual parent2
-    ) {
-        var rand = new Random();
-        var newGenome = "";
-
-        // Kreuzung: zufällige Auswahl eines Allels von einem der Eltern
-        for (int i = 0; i < parent1.Genome.Length; i++)
+        if (parent1.Gender == parent2.Gender)
         {
-            newGenome += rand.Next(0, 2) == 0 ? parent1.Genome[i] : parent2.Genome[i];
+            throw new ArgumentException("Beide Elternteile müssen unterschiedliches Geschlecht haben.");
         }
 
-        // Zufällig das Geschlecht des Kindes bestimmen
-        var newGender = rand.Next(0, 2) == 0 ? "X" : "Y";
+        string childGenome = CrossGenomes(parent1.Genome, parent2.Genome);
+        string childGender = (new Random().Next(2) == 0) ? "X" : "Y";
+        return new Individual("Child of " + parent1.Name + " and " + parent2.Name, childGenome, childGender);
+    }
 
-        return new Individual("Child of " + parent1.Name + " and " + parent2.Name, newGenome, newGender);
+    private static string CrossGenomes(string genome1, string genome2)
+    {
+        Random random = new Random();
+        char[] childGenome = new char[genome1.Length];
+
+        for (int i = 0; i < genome1.Length; i++)
+        {
+            // Randomly select a bit from either parent
+            childGenome[i] = (random.Next(2) == 0) ? genome1[i] : genome2[i];
+        }
+
+        return new string(childGenome);
     }
 }
