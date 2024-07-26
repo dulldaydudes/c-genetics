@@ -6,19 +6,20 @@ using System.Linq;
 
 class Program
 {
+    private const string JsonFilePath = "/Users/amlor/CSharpProjects/Genetics/traits.json";
+
     public static void Main(string[] args)
     {
-        string jsonFilePath = "/Users/amlor/CSharpProjects/Genetics/traits.json";
-
-        var (traits, genomeLength) = TraitAnalyzer.GetMaxGenomeLength(jsonFilePath);
-
-        Console.WriteLine(traits.Count + " Traits geladen.");
-
         var people = new List<Individual>();
-
+        (List<Trait> traits, int genomeLength) = TraitAnalyzer.GetMaxGenomeLength(JsonFilePath);
         string[] menuItems =
         {
-            "Person erzeugen", "Person editieren", "Nachkommen zeugen", "Tabelle ausgeben", "Programm beenden",
+            "Person erzeugen", 
+            "Person anzeigen",
+            "Person editieren",
+            "Nachkommen zeugen",
+            "Tabelle ausgeben",
+            "Programm beenden",
         };
         int selectedIndex = 0;
         bool exit = false;
@@ -60,15 +61,18 @@ class Program
                             CreatePerson(people, genomeLength);
                             break;
                         case 1:
-                            EditPersons(traits, people);
+                            ShowPersons(traits, people);
                             break;
                         case 2:
-                            Procreate(people);
+                            EditPersons(traits, people);
                             break;
                         case 3:
-                            ShowTraitTable("Traits including Crossed Individuals", traits, people);
+                            Procreate(people);
                             break;
                         case 4:
+                            ShowTraitTable("Traits including Crossed Individuals", traits, people);
+                            break;
+                        case 5:
                             exit = true;
                             break;
                     }
@@ -77,8 +81,11 @@ class Program
         }
     }
 
-    private static void ShowTraitTable(string title, List<Trait> traits, List<Individual> individuals)
-    {
+    private static void ShowTraitTable(
+        string title,
+        List<Trait> traits,
+        List<Individual> individuals
+        ) {
         Console.Clear();
         Console.WriteLine(title);
         Console.WriteLine("Trait\t\t\t" + string.Join("\t", individuals.ConvertAll(p => p.Name)));
@@ -110,8 +117,10 @@ class Program
         return new string(binaryString);
     }
 
-    private static void CreatePerson(List<Individual> people, int genomeLength)
-    {
+    private static void CreatePerson(
+        List<Individual> people,
+        int genomeLength
+        ) {
         Console.Clear();
         Random random = new Random();
         string gender = random.Next(2) == 0 ? "X" : "Y";
@@ -127,13 +136,29 @@ class Program
         Console.ReadKey();
     }
 
-    private static void EditPersons(List<Trait> traits, List<Individual> individuals)
-    {
+    private static void ShowPersons(
+        List<Trait> traits,
+        List<Individual> individuals
+    ) {
+        string[] namesArray = individuals.Select(ind => ind.Name).ToArray();
+        string editElement = "Bearbeiten";
+        string backElement = "Zurück";
+        string[] menuItems = new string[namesArray.Length + 2];
+        Array.Copy(namesArray, menuItems, namesArray.Length);
+        menuItems[^2] = editElement;
+        menuItems[^1] = backElement;
+        
+    }
+
+    private static void EditPersons(
+        List<Trait> traits,
+        List<Individual> individuals
+        ) {
         string[] namesArray = individuals.Select(ind => ind.Name).ToArray();
         string backElement = "Zurück";
         string[] menuItems = new string[namesArray.Length + 1];
         Array.Copy(namesArray, menuItems, namesArray.Length);
-        menuItems[menuItems.Length - 1] = backElement;
+        menuItems[^1] = backElement;
 
         int selectedIndex = 0;
         bool exit = false;
@@ -188,7 +213,7 @@ class Program
         string backElement = "Zurück";
         string[] menuItems = new string[traitsArray.Length + 1];
         Array.Copy(traitsArray, menuItems, traitsArray.Length);
-        menuItems[menuItems.Length - 1] = backElement;
+        menuItems[^1] = backElement;
 
         int selectedIndex = 0;
         bool exit = false;
@@ -245,7 +270,6 @@ class Program
             string segment = person.Genome.Substring(condition.Position, condition.Length);
             if (condition.Contains != null)
             {
-                // Beispiel: Wenn das Trait enthalten ist, schalte es aus, und umgekehrt
                 if (segment.Contains(condition.Contains))
                 {
                     segment = segment.Replace(condition.Contains, "");
@@ -262,7 +286,6 @@ class Program
 
     private static string FormatTraitName(Trait trait, Individual person)
     {
-        // Format trait name based on presence in person's genome
         return $"{trait.Name}: {(trait.IsPresent(person) ? "X" : "O")}";
     }
 
@@ -279,12 +302,12 @@ class Program
         string backElement = "Zurück";
         string[] menuItems = new string[namesArray.Length + 1];
         Array.Copy(namesArray, menuItems, namesArray.Length);
-        menuItems[menuItems.Length - 1] = backElement;
+        menuItems[^1] = backElement;
 
         int selectedIndex = 0;
         bool parent1Selected = false;
-        Individual parent1 = null;
-        Individual parent2 = null;
+        Individual? parent1 = null;
+        Individual? parent2 = null;
         bool exit = false;
 
         while (!exit)
