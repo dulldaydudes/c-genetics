@@ -14,8 +14,7 @@ class Program
         (List<Trait> traits, int genomeLength) = TraitAnalyzer.GetMaxGenomeLength(JsonFilePath);
         string[] menuItems =
         {
-            "Person erzeugen",
-            "Person anzeigen",
+            "Neue Person erzeugen",
             "Person editieren",
             "Nachkommen zeugen",
             "Tabelle ausgeben",
@@ -23,9 +22,6 @@ class Program
         };
         int selectedIndex = 0;
         bool exit = false;
-
-        IndividualService.CreatePerson(people, genomeLength);
-        IndividualService.CreatePerson(people, genomeLength);
 
         while (!exit)
         {
@@ -46,7 +42,6 @@ class Program
             }
             Console.ResetColor();
 
-
             var key = Console.ReadKey(true).Key;
 
             switch (key)
@@ -66,18 +61,15 @@ class Program
                             Console.ReadKey();
                             break;
                         case 1:
-                            IndividualService.ShowPersons(traits, people);
-                            break;
-                        case 2:
                             IndividualService.EditPersons(traits, people);
                             break;
-                        case 3:
+                        case 2:
                             IndividualService.Procreate(people);
                             break;
-                        case 4:
+                        case 3:
                             Tables.ShowTraitTable("Traits including Crossed Individuals", traits, people);
                             break;
-                        case 5:
+                        case 4:
                             exit = true;
                             break;
                     }
