@@ -6,10 +6,7 @@ using System.Linq;
 
 public class IndividualService
 {
-    public static void CreatePerson(
-        List<Individual> people,
-        int genomeLength
-    )
+    public static void CreatePerson(List<Individual> people, int genomeLength)
     {
         Console.Clear();
         Random random = new Random();
@@ -22,7 +19,7 @@ public class IndividualService
                 gender
             ));
     }
-    
+
     private static string GenerateRandomBinaryString(int length)
     {
         Random random = new Random();
@@ -35,183 +32,36 @@ public class IndividualService
 
         return new string(binaryString);
     }
-    
-    public static void ShowPersons(
-        List<Trait> traits,
-        List<Individual> individuals
-    )
+
+    public static void ShowPersons(List<Trait> traits, List<Individual> individuals)
     {
-        string[] namesArray = individuals.Select(ind => ind.Name).ToArray();
-        // string editElement = "Bearbeiten";
-        string backElement = "Zurück";
-        string[] menuItems = new string[namesArray.Length + 1];
-        Array.Copy(namesArray, menuItems, namesArray.Length);
-        // menuItems[^2] = editElement;
-        menuItems[^1] = backElement;
-        int selectedIndex = 0;
-        bool exit = false;
-
-        while (!exit)
+        int selectedIndex = DisplayMenu(individuals.Select(ind => ind.Name).ToArray(), "Zurück");
+        if (selectedIndex != -1)
         {
-            Console.Clear();
-            for (int i = 0; i < menuItems.Length; i++)
-            {
-                if (i == selectedIndex)
-                {
-                    Console.BackgroundColor = ConsoleColor.Gray;
-                    Console.ForegroundColor = ConsoleColor.Black;
-                }
-                else
-                {
-                    Console.ResetColor();
-                }
-
-                Console.WriteLine(menuItems[i]);
-            }
-            Console.ResetColor();
-
-            var key = Console.ReadKey(true).Key;
-
-            switch (key)
-            {
-                case ConsoleKey.UpArrow:
-                    selectedIndex = (selectedIndex == 0) ? menuItems.Length - 1 : selectedIndex - 1;
-                    break;
-                case ConsoleKey.DownArrow:
-                    selectedIndex = (selectedIndex == menuItems.Length - 1) ? 0 : selectedIndex + 1;
-                    break;
-                case ConsoleKey.Enter:
-                    if (menuItems.Length - 1 == selectedIndex)
-                    {
-                        exit = true;
-                    }
-                    else
-                    {
-                        Tables.ShowPerson(individuals[selectedIndex], traits);
-                    }
-
-                    break;
-            }
+            Tables.ShowPerson(individuals[selectedIndex], traits);
         }
     }
 
-    public static void EditPersons(
-        List<Trait> traits,
-        List<Individual> individuals
-    )
+    public static void EditPersons(List<Trait> traits, List<Individual> individuals)
     {
-        string[] namesArray = individuals.Select(ind => ind.Name).ToArray();
-        string backElement = "Zurück";
-        string[] menuItems = new string[namesArray.Length + 1];
-        Array.Copy(namesArray, menuItems, namesArray.Length);
-        menuItems[^1] = backElement;
-
-        int selectedIndex = 0;
-        bool exit = false;
-
-        while (!exit)
+        int selectedIndex = DisplayMenu(individuals.Select(ind => ind.Name).ToArray(), "Zurück");
+        if (selectedIndex != -1)
         {
-            Console.Clear();
-            for (int i = 0; i < menuItems.Length; i++)
-            {
-                if (i == selectedIndex)
-                {
-                    Console.BackgroundColor = ConsoleColor.Gray;
-                    Console.ForegroundColor = ConsoleColor.Black;
-                }
-                else
-                {
-                    Console.ResetColor();
-                }
-
-                Console.WriteLine(menuItems[i]);
-            }
-
-            Console.ResetColor();
-            var key = Console.ReadKey(true).Key;
-
-            switch (key)
-            {
-                case ConsoleKey.UpArrow:
-                    selectedIndex = (selectedIndex == 0) ? menuItems.Length - 1 : selectedIndex - 1;
-                    break;
-                case ConsoleKey.DownArrow:
-                    selectedIndex = (selectedIndex == menuItems.Length - 1) ? 0 : selectedIndex + 1;
-                    break;
-                case ConsoleKey.Enter:
-                    if (menuItems.Length - 1 == selectedIndex)
-                    {
-                        exit = true;
-                    }
-                    else
-                    {
-                        EditPerson(individuals[selectedIndex], traits);
-                    }
-
-                    break;
-            }
+            EditPerson(individuals[selectedIndex], traits);
         }
     }
 
     private static void EditPerson(Individual person, List<Trait> traits)
     {
-        string[] traitsArray = traits.Select(trait => FormatTraitName(trait, person)).ToArray();
-        string backElement = "Zurück";
-        string[] menuItems = new string[traitsArray.Length + 1];
-        Array.Copy(traitsArray, menuItems, traitsArray.Length);
-        menuItems[^1] = backElement;
-
-        int selectedIndex = 0;
-        bool exit = false;
-
-        while (!exit)
+        int selectedIndex = DisplayMenu(traits.Select(trait => FormatTraitName(trait, person)).ToArray(), "Zurück");
+        if (selectedIndex != -1)
         {
-            Console.Clear();
-            for (int i = 0; i < menuItems.Length; i++)
-            {
-                if (i == selectedIndex)
-                {
-                    Console.BackgroundColor = ConsoleColor.Gray;
-                    Console.ForegroundColor = ConsoleColor.Black;
-                }
-                else
-                {
-                    Console.ResetColor();
-                }
-
-                Console.WriteLine(menuItems[i]);
-            }
-
-            Console.ResetColor();
-            var key = Console.ReadKey(true).Key;
-
-            switch (key)
-            {
-                case ConsoleKey.UpArrow:
-                    selectedIndex = (selectedIndex == 0) ? menuItems.Length - 1 : selectedIndex - 1;
-                    break;
-                case ConsoleKey.DownArrow:
-                    selectedIndex = (selectedIndex == menuItems.Length - 1) ? 0 : selectedIndex + 1;
-                    break;
-                case ConsoleKey.Enter:
-                    if (menuItems.Length - 1 == selectedIndex)
-                    {
-                        exit = true;
-                    }
-                    else
-                    {
-                        ToggleTrait(person, traits[selectedIndex]);
-                        menuItems[selectedIndex] = FormatTraitName(traits[selectedIndex], person);
-                    }
-
-                    break;
-            }
+            ToggleTrait(person, traits[selectedIndex]);
         }
     }
 
     private static void ToggleTrait(Individual person, Trait trait)
     {
-        Console.WriteLine("I'm in");
         foreach (var condition in trait.Present)
         {
             string segment = person.Genome.Substring(condition.Position, condition.Length);
@@ -245,24 +95,54 @@ public class IndividualService
             return;
         }
 
-        string[] namesArray = people.Select(ind => ind.Name).ToArray();
-        string backElement = "Zurück";
-        string[] menuItems = new string[namesArray.Length + 1];
-        Array.Copy(namesArray, menuItems, namesArray.Length);
-        menuItems[^1] = backElement;
+        int selectedIndex1 = DisplayMenu(people.Select(ind => ind.Name).ToArray(), "Zurück");
+        if (selectedIndex1 == -1) return;
 
+        int selectedIndex2 = DisplayMenu(people.Select(ind => ind.Name).ToArray(), "Zurück");
+        if (selectedIndex2 == -1) return;
+
+        var parent1 = people[selectedIndex1];
+        var parent2 = people[selectedIndex2];
+
+        if (parent1 == parent2)
+        {
+            Console.WriteLine("Eine Person kann nicht mit sich selbst Nachkommen zeugen.");
+            Console.ReadKey();
+            return;
+        }
+
+        Console.WriteLine($"{parent1.Name} und {parent2.Name} haben ein Kind gezeugt.");
+
+        var childGenome = RecombineGenomes(parent1.Genome, parent2.Genome);
+        var gender = new Random().Next(2) == 0 ? "X" : "Y";
+        people.Add(new Individual("Kind von " + parent1.Name + " und " + parent2.Name, childGenome, gender));
+
+        Console.ReadKey();
+    }
+
+    private static string RecombineGenomes(string genome1, string genome2)
+    {
+        int length = Math.Min(genome1.Length, genome2.Length);
+        Random random = new Random();
+        char[] childGenome = new char[length];
+
+        for (int i = 0; i < length; i++)
+        {
+            childGenome[i] = random.Next(2) == 0 ? genome1[i] : genome2[i];
+        }
+
+        return new string(childGenome);
+    }
+
+    private static int DisplayMenu(string[] menuItems, string backOption)
+    {
         int selectedIndex = 0;
-        bool parent1Selected = false;
-        Individual? parent1 = null;
-        Individual? parent2 = null;
-        bool exit = false;
+        string[] extendedMenuItems = menuItems.Append(backOption).ToArray();
 
-        while (!exit)
+        while (true)
         {
             Console.Clear();
-            Console.WriteLine("Wähle zwei Elternteile für die Kreuzung:");
-
-            for (int i = 0; i < menuItems.Length; i++)
+            for (int i = 0; i < extendedMenuItems.Length; i++)
             {
                 if (i == selectedIndex)
                 {
@@ -273,56 +153,22 @@ public class IndividualService
                 {
                     Console.ResetColor();
                 }
-
-                Console.WriteLine(menuItems[i]);
+                Console.WriteLine(extendedMenuItems[i]);
             }
-
             Console.ResetColor();
-            var key = Console.ReadKey(true).Key;
 
+            var key = Console.ReadKey(true).Key;
             switch (key)
             {
                 case ConsoleKey.UpArrow:
-                    selectedIndex = (selectedIndex == 0) ? menuItems.Length - 1 : selectedIndex - 1;
+                    selectedIndex = (selectedIndex == 0) ? extendedMenuItems.Length - 1 : selectedIndex - 1;
                     break;
                 case ConsoleKey.DownArrow:
-                    selectedIndex = (selectedIndex == menuItems.Length - 1) ? 0 : selectedIndex + 1;
+                    selectedIndex = (selectedIndex == extendedMenuItems.Length - 1) ? 0 : selectedIndex + 1;
                     break;
                 case ConsoleKey.Enter:
-                    if (menuItems.Length - 1 == selectedIndex)
-                    {
-                        exit = true;
-                    }
-                    else
-                    {
-                        if (!parent1Selected)
-                        {
-                            parent1 = people[selectedIndex];
-                            parent1Selected = true;
-                            menuItems[selectedIndex] += " (Parent 1)";
-                        }
-                        else
-                        {
-                            parent2 = people[selectedIndex];
-                            exit = true;
-                        }
-                    }
-
-                    break;
+                    return (selectedIndex == extendedMenuItems.Length - 1) ? -1 : selectedIndex;
             }
         }
-
-        if (parent1 != null && parent2 != null)
-        {
-            var child = Individual.Cross(parent1, parent2);
-            people.Add(child);
-            Console.WriteLine($"Nachkomme {child.Name} wurde von {parent1.Name} und {parent2.Name} erzeugt.");
-        }
-        else
-        {
-            Console.WriteLine("Kreuzung abgebrochen.");
-        }
-
-        Console.ReadKey();
     }
 }

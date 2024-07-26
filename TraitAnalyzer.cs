@@ -11,10 +11,9 @@ public class TraitAnalyzer
         {
             PropertyNameCaseInsensitive = true
         };
-        
+
         string json = File.ReadAllText(jsonFilePath);
-        Console.WriteLine($"JSON Inhalt: {json}");
-        TraitsData? traitsData = null;
+        TraitsData? traitsData;
 
         try
         {
@@ -26,27 +25,16 @@ public class TraitAnalyzer
             throw;
         }
 
-        if (traitsData == null)
+        if (traitsData?.Traits == null)
         {
-            Console.WriteLine("Deserialisierung fehlgeschlagen: traitsData ist null.");
             throw new InvalidOperationException("Die deserialisierten Trait-Daten sind null.");
-        }
-
-        if (traitsData.Traits == null)
-        {
-            Console.WriteLine("Deserialisierung fehlgeschlagen: traitsData.Traits ist null.");
-            throw new InvalidOperationException("Die Liste der Traits ist null.");
         }
 
         int maxLength = 0;
         foreach (var trait in traitsData.Traits)
         {
-            Console.WriteLine($"Trait: {trait.Name}");
             foreach (var condition in trait.Present)
             {
-                Console.WriteLine(
-                    $"  Condition - Position: {condition.Position}, Length: {condition.Length}, Contains: {condition.Contains}, Equals: {condition.EqualValue}, Operator: {condition.Operator}");
-
                 int endPosition = condition.Position + condition.Length;
                 if (endPosition > maxLength)
                 {

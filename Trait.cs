@@ -18,7 +18,6 @@ public class Trait
         foreach (var condition in Present)
         {
             var genomeSegment = individual.Genome.Substring(condition.Position, condition.Length);
-
             bool conditionMet = false;
 
             if (!string.IsNullOrEmpty(condition.Contains))
