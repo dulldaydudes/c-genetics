@@ -14,12 +14,7 @@ class Program
         (List<Trait> traits, int genomeLength) = TraitAnalyzer.GetMaxGenomeLength(JsonFilePath);
         string[] menuItems =
         {
-            "Person erzeugen", 
-            "Person anzeigen",
-            "Person editieren",
-            "Nachkommen zeugen",
-            "Tabelle ausgeben",
-            "Programm beenden",
+            "Person erzeugen", "Person anzeigen", "Person editieren", "Nachkommen zeugen", "Tabelle ausgeben", "Programm beenden",
         };
         int selectedIndex = 0;
         bool exit = false;
@@ -41,7 +36,6 @@ class Program
 
                 Console.WriteLine(menuItems[i]);
             }
-
             Console.ResetColor();
 
             var key = Console.ReadKey(true).Key;
@@ -85,7 +79,8 @@ class Program
         string title,
         List<Trait> traits,
         List<Individual> individuals
-        ) {
+    )
+    {
         Console.Clear();
         Console.WriteLine(title);
         Console.WriteLine("Trait\t\t\t" + string.Join("\t", individuals.ConvertAll(p => p.Name)));
@@ -120,7 +115,8 @@ class Program
     private static void CreatePerson(
         List<Individual> people,
         int genomeLength
-        ) {
+    )
+    {
         Console.Clear();
         Random random = new Random();
         string gender = random.Next(2) == 0 ? "X" : "Y";
@@ -139,21 +135,79 @@ class Program
     private static void ShowPersons(
         List<Trait> traits,
         List<Individual> individuals
-    ) {
+    )
+    {
         string[] namesArray = individuals.Select(ind => ind.Name).ToArray();
-        string editElement = "Bearbeiten";
+        // string editElement = "Bearbeiten";
         string backElement = "Zurück";
-        string[] menuItems = new string[namesArray.Length + 2];
+        string[] menuItems = new string[namesArray.Length + 1];
         Array.Copy(namesArray, menuItems, namesArray.Length);
-        menuItems[^2] = editElement;
+        // menuItems[^2] = editElement;
         menuItems[^1] = backElement;
+        int selectedIndex = 0;
+        bool exit = false;
+
+        while (!exit)
+        {
+            Console.Clear();
+            for (int i = 0; i < menuItems.Length; i++)
+            {
+                if (i == selectedIndex)
+                {
+                    Console.BackgroundColor = ConsoleColor.Gray;
+                    Console.ForegroundColor = ConsoleColor.Black;
+                }
+                else
+                {
+                    Console.ResetColor();
+                }
+
+                Console.WriteLine(menuItems[i]);
+            }
+            Console.ResetColor();
+
+            var key = Console.ReadKey(true).Key;
+
+            switch (key)
+            {
+                case ConsoleKey.UpArrow:
+                    selectedIndex = (selectedIndex == 0) ? menuItems.Length - 1 : selectedIndex - 1;
+                    break;
+                case ConsoleKey.DownArrow:
+                    selectedIndex = (selectedIndex == menuItems.Length - 1) ? 0 : selectedIndex + 1;
+                    break;
+                case ConsoleKey.Enter:
+                    if (menuItems.Length - 1 == selectedIndex)
+                    {
+                        exit = true;
+                    }
+                    else
+                    {
+                        ShowPerson(individuals[selectedIndex], traits);
+                    }
+
+                    break;
+            }
+        }
+    }
+
+    public static void ShowPerson(
+        Individual currentPerson,
+        List<Trait> traits
+    )
+    {
+        Console.Clear();
+        Console.WriteLine("Name:".PadRight(20) + currentPerson.Name);
+        Console.WriteLine("Sex:".PadRight(20) + currentPerson.Sex);
+        Console.WriteLine("Genome:".PadRight(20) + currentPerson.Genome);
         
     }
 
     private static void EditPersons(
         List<Trait> traits,
         List<Individual> individuals
-        ) {
+    )
+    {
         string[] namesArray = individuals.Select(ind => ind.Name).ToArray();
         string backElement = "Zurück";
         string[] menuItems = new string[namesArray.Length + 1];

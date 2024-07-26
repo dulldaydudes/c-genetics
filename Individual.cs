@@ -4,18 +4,18 @@ public class Individual
 {
     public string Name { get; set; }
     public string Genome { get; set; }
-    public string Gender { get; set; }
+    public string Sex { get; set; }
 
-    public Individual(string name, string genome, string gender)
+    public Individual(string name, string genome, string sex)
     {
         Name = name;
         Genome = genome;
-        Gender = gender;
+        Sex = sex;
     }
 
     public static Individual Cross(Individual parent1, Individual parent2)
     {
-        if (parent1.Gender == parent2.Gender)
+        if (parent1.Sex == parent2.Sex)
         {
             throw new ArgumentException("Beide Elternteile müssen unterschiedliches Geschlecht haben.");
         }
