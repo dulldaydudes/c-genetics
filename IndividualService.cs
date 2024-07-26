@@ -2,11 +2,22 @@ namespace Genetics;
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 
 public class IndividualService
 {
+    private static readonly ConsoleColor[] HighlightColors =
+    {
+        ConsoleColor.DarkBlue, // 1. Contains
+        ConsoleColor.DarkRed, // 2. Contains (Not)
+        ConsoleColor.DarkGreen, // 3. Equals
+        ConsoleColor.Magenta, // 4. Equals (Not)
+        ConsoleColor.Cyan, // 5. Selected, Contains
+        ConsoleColor.Yellow, // 6. Selected, Contains (Not)
+        ConsoleColor.Gray, // 7. Selected, Equals
+        ConsoleColor.White // 8. Selected, Equals (Not)
+    };
+
     public static void CreatePerson(List<Individual> people, int genomeLength)
     {
         Console.WriteLine("Geben Sie den Namen der neuen Person ein:");
@@ -163,51 +174,116 @@ public class IndividualService
     {
         // Konvertiere den Genom-String in ein Zeichen-Array
         char[] genomeChars = currentPerson.Genome.Sequence.ToCharArray();
-
         Console.Write("Genome".PadRight(Program.PadRightDistance) + ": ");
 
-        Trait? currentTrait = null;
+        // Finde das aktuelle Trait basierend auf dem Namen
+        Trait? currentTrait = traits.FirstOrDefault(trait => selectedTraitName.StartsWith(trait.Name));
+
         for (int i = 0; i < genomeChars.Length; i++)
         {
-            foreach (Trait trait in traits)
-            {
-                if (selectedTraitName.StartsWith(trait.Name))
-                {
-                    currentTrait = trait;
-                    break;
-                }
-            }
+            // Standardfarben zurücksetzen
+            Console.ResetColor();
+
+            bool isHighlighted = false;
+            int colorIndex = -1; // Index der Farbe basierend auf den Bedingungen
+
             if (currentTrait != null)
             {
                 foreach (var condition in currentTrait.Present)
                 {
+                    // Sicherstellen, dass die Condition-Variablen nicht null sind
+                    if (condition.Contains == null)
+                    {
+                        continue; // Überspringe die Condition, wenn Contains null ist
+                    }
+
+                    // Bereich hervorheben, falls im Segment
                     if (i >= condition.Position && i < condition.Position + condition.Length)
                     {
-                        if (condition.Contains != null)
+                        // Bestimme die Endposition des aktuellen Segments
+                        int segmentLength = Math.Min(condition.Length, genomeChars.Length - i);
+
+                        // Extrahiere das Segment aus dem Genom
+                        string genomeSegment = new string(genomeChars, i, segmentLength);
+
+                        bool conditionMatches;
+
+                        // Überprüfe die Bedingung basierend auf dem Operator
+                        if (condition.Operator == "not")
                         {
-                            Console.ForegroundColor = ConsoleColor.Black;
-                            Console.BackgroundColor = ConsoleColor.DarkBlue;
+                            conditionMatches = ContainsValueNot(genomeSegment, condition.Contains);
+                            colorIndex = 1; // Farbe für Contains (Not)
+                        }
+                        else if (condition.Operator == "equals")
+                        {
+                            conditionMatches = EqualsValue(genomeSegment, condition.Contains);
+                            colorIndex = 2; // Farbe für Equals
                         }
                         else
                         {
-                            Console.BackgroundColor = ConsoleColor.DarkRed;
+                            conditionMatches = ContainsValue(genomeSegment, condition.Contains);
+                            colorIndex = 0; // Farbe für Contains
                         }
-                    }
-                    else
-                    {
-                        Console.ForegroundColor = ConsoleColor.Gray;
+
+                        // Wähle die Farbe basierend auf dem Ergebnis
+                        if (conditionMatches)
+                        {
+                            colorIndex = colorIndex + 4; // Erhöht den Index für den ausgewählten Zustand
+                        }
                     }
                 }
             }
-            if (genomeIndex == i)
+
+            if (i == genomeIndex)
             {
-                Console.BackgroundColor = ConsoleColor.Gray;
+                // Setze die Farbe für die aktuell ausgewählte Position
+                colorIndex = 4 + (colorIndex == -1 ? 0 : colorIndex); // Füge die Farbe für die Auswahl hinzu
+            }
+
+            // Wende die Farbe an, falls ein gültiger Index gefunden wurde
+            if (colorIndex >= 0 && colorIndex < HighlightColors.Length)
+            {
+                Console.BackgroundColor = HighlightColors[colorIndex];
                 Console.ForegroundColor = ConsoleColor.Black;
             }
-            Console.Write(genomeChars[i]);
-            Console.ResetColor();
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.Gray;
+            }
+
+            // Ausgabe des aktuellen Zeichens im Genom
+            Console.Write(genomeChars[i] == '1' ? 'X' : 'O');
+
+            // Setze die Farben zurück, falls sie angepasst wurden
+            if (colorIndex >= 0)
+            {
+                Console.ResetColor();
+            }
         }
+
+        // Setze die Farben zurück
+        Console.ResetColor();
         Console.WriteLine();
+    }
+
+    private static bool ContainsValue(string genomeSegment, string containsValue)
+    {
+        return genomeSegment.Contains(containsValue);
+    }
+
+    private static bool ContainsValueNot(string genomeSegment, string containsValue)
+    {
+        return !genomeSegment.Contains(containsValue);
+    }
+
+    private static bool EqualsValue(string genomeSegment, string equalValue)
+    {
+        return genomeSegment.Equals(equalValue);
+    }
+
+    private static bool EqualsValueNot(string genomeSegment, string equalValue)
+    {
+        return !genomeSegment.Equals(equalValue);
     }
 
     private static void ToggleTraitBit(Individual individual, Trait trait)
