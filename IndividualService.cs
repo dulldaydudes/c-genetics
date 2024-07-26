@@ -11,11 +11,21 @@ public class IndividualService
         ConsoleColor.DarkBlue, // 1. Contains
         ConsoleColor.DarkRed, // 2. Contains (Not)
         ConsoleColor.DarkGreen, // 3. Equals
-        ConsoleColor.Magenta, // 4. Equals (Not)
+        ConsoleColor.DarkMagenta, // 4. Equals (Not)
+        ConsoleColor.DarkCyan, // 5. Selected, Contains
+        ConsoleColor.DarkYellow, // 6. Selected, Contains (Not)
+        ConsoleColor.DarkGray, // 7. Selected, Equals
+        ConsoleColor.Black, // 8. Selected, Equals (Not)
+
+        ConsoleColor.Blue, // 1. Contains
+        ConsoleColor.Red, // 2. Contains (Not)
+        ConsoleColor.Green, // 3. Equals
         ConsoleColor.Cyan, // 5. Selected, Contains
+        ConsoleColor.Magenta, // 4. Equals (Not)
         ConsoleColor.Yellow, // 6. Selected, Contains (Not)
         ConsoleColor.Gray, // 7. Selected, Equals
-        ConsoleColor.White // 8. Selected, Equals (Not)
+
+        ConsoleColor.White, // 8. Selected, Equals (Not)
     };
 
     public static void CreatePerson(List<Individual> people, int genomeLength)
@@ -123,15 +133,11 @@ public class IndividualService
                     {
                         exit = true;
                     }
-                    else if (selectedIndex == 0) // Name ändern
+                    else if (selectedIndex == 0)
                     {
                         ChangePersonName(individual);
                     }
-                    else if (selectedIndex == 1) // Genom überspringen
-                    {
-                        // Das Genom wird hier einfach übersprungen, keine Aktion
-                    }
-                    else if (selectedIndex == 2) // Geschlecht umschalten
+                    else if (selectedIndex == 2)
                     {
                         ToggleGender(individual);
                     }
@@ -179,56 +185,78 @@ public class IndividualService
         // Finde das aktuelle Trait basierend auf dem Namen
         Trait? currentTrait = traits.FirstOrDefault(trait => selectedTraitName.StartsWith(trait.Name));
 
+        // Iteriere über jedes Zeichen im Genom
         for (int i = 0; i < genomeChars.Length; i++)
         {
-            // Standardfarben zurücksetzen
+            // Setze Standardfarben zurück
             Console.ResetColor();
 
-            bool isHighlighted = false;
-            int colorIndex = -1; // Index der Farbe basierend auf den Bedingungen
+            // Initialisiere den Farbindex
+            int colorIndex = -1;
 
+            // Falls das aktuelle Trait vorhanden ist
             if (currentTrait != null)
             {
                 foreach (var condition in currentTrait.Present)
                 {
-                    // Sicherstellen, dass die Condition-Variablen nicht null sind
-                    if (condition.Contains == null)
+                    // Stelle sicher, dass die Condition-Variablen nicht null sind
+                    if (condition.Contains == null && condition.EqualValue == null)
                     {
-                        continue; // Überspringe die Condition, wenn Contains null ist
+                        continue; // Überspringe die Condition, wenn beide null sind
                     }
 
                     // Bereich hervorheben, falls im Segment
                     if (i >= condition.Position && i < condition.Position + condition.Length)
                     {
-                        // Bestimme die Endposition des aktuellen Segments
-                        int segmentLength = Math.Min(condition.Length, genomeChars.Length - i);
+                        bool conditionMatches = false;
+                        char genomeSegment = genomeChars[i];
+                        int conditionPosition = i - condition.Position;
 
-                        // Extrahiere das Segment aus dem Genom
-                        string genomeSegment = new string(genomeChars, i, segmentLength);
-
-                        bool conditionMatches;
-
-                        // Überprüfe die Bedingung basierend auf dem Operator
-                        if (condition.Operator == "not")
+                        // Überprüfe die Bedingung basierend auf equalValue
+                        if (condition.EqualValue != null)
                         {
-                            conditionMatches = ContainsValueNot(genomeSegment, condition.Contains);
-                            colorIndex = 1; // Farbe für Contains (Not)
+                            if (condition.Operator == "not")
+                            {
+                                conditionMatches = EqualsValue(
+                                    genomeSegment.ToString(),
+                                    extractAlleleFromCondition(condition.EqualValue, conditionPosition)
+                                );
+                                colorIndex = conditionMatches ? 5 : 6; // Farbe für Equals oder nicht Equals
+                            }
+                            else
+                            {
+                                conditionMatches = EqualsValueNot(
+                                    genomeSegment.ToString(),
+                                    extractAlleleFromCondition(condition.EqualValue, conditionPosition)
+                                );
+                                colorIndex = conditionMatches ? 3 : 4; // Farbe für Equals (Not) oder nicht Equals
+                            }
                         }
-                        else if (condition.Operator == "equals")
+                        // Überprüfe die Bedingung basierend auf Contains
+                        else if (condition.Contains != null)
                         {
-                            conditionMatches = EqualsValue(genomeSegment, condition.Contains);
-                            colorIndex = 2; // Farbe für Equals
-                        }
-                        else
-                        {
-                            conditionMatches = ContainsValue(genomeSegment, condition.Contains);
-                            colorIndex = 0; // Farbe für Contains
+                            if (condition.Operator == "not")
+                            {
+                                conditionMatches = ContainsValueNot(
+                                    genomeSegment.ToString(),
+                                    extractAlleleFromCondition(condition.Contains, conditionPosition)
+                                );
+                                colorIndex = conditionMatches ? 7 : 8; // Farbe für Contains (Not) oder nicht
+                            }
+                            else
+                            {
+                                conditionMatches = ContainsValue(
+                                    genomeSegment.ToString(),
+                                    extractAlleleFromCondition(condition.Contains, conditionPosition)
+                                );
+                                colorIndex = conditionMatches ? 1 : 2; // Farbe für Contains oder nicht
+                            }
                         }
 
                         // Wähle die Farbe basierend auf dem Ergebnis
                         if (conditionMatches)
                         {
-                            colorIndex = colorIndex + 4; // Erhöht den Index für den ausgewählten Zustand
+                            colorIndex = colorIndex + 4; // Erhöhe den Index für den ausgewählten Zustand
                         }
                     }
                 }
@@ -251,19 +279,29 @@ public class IndividualService
                 Console.ForegroundColor = ConsoleColor.Gray;
             }
 
-            // Ausgabe des aktuellen Zeichens im Genom
+            // Gib das Zeichen aus und setze die Farben zurück, falls sie angepasst wurden
             Console.Write(genomeChars[i] == '1' ? 'X' : 'O');
 
-            // Setze die Farben zurück, falls sie angepasst wurden
-            if (colorIndex >= 0)
-            {
-                Console.ResetColor();
-            }
+            // Setze die Farben zurück nach der Ausgabe des Zeichens
+            Console.ResetColor();
         }
 
-        // Setze die Farben zurück
+        // Setze die Farben zurück nach dem Ende der Zeile
         Console.ResetColor();
         Console.WriteLine();
+    }
+
+    private static string extractAlleleFromCondition(
+        string condition,
+        int start
+    )
+    {
+        if (condition.Length > 1)
+        {
+            return condition.Substring(start, 1);
+        }
+
+        return condition;
     }
 
     private static bool ContainsValue(string genomeSegment, string containsValue)
